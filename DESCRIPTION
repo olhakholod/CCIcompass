@@ -1,0 +1,22 @@
+Package: CCIcompass
+Type: Package
+Title: Composite Interaction Score (CIS) metric to rank cell-cell interactions (CCIs) across multiple inference tools.
+Version: 0.1.0
+Authors@R: 
+    person("Olha", "Kholod", , "olha.kholod@gmail.com", role = c("aut", "cre"))
+Description: CIS based on ranked-biased precision (RBP), which prioritizes top-ranked interactions from methods implemented in LIANA package and calculates a weighted composite score that reflects agreement across tools, while accounting for rank position.
+Depends: R (>= 4.1.0)
+Imports:
+    Seurat,
+    liana,
+    dplyr,
+    readr,
+    magrittr,
+    tibble
+License: MIT
+Encoding: UTF-8
+LazyData: true
+RoxygenNote: 7.3.2
+Suggests: 
+    testthat (>= 3.0.0)
+Config/testthat/edition: 3

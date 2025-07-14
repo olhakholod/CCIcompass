@@ -21,14 +21,10 @@ devtools::install_github("olhakholod/CCIcompass")
 
 ## Usage
 ```r
-library(ccicompass)
-library(ggplot2)
+library(CCIcompass)
 
-# Load your preprocessed single-cell dataset (e.g., Seurat object)
-seu <- readRDS("your_seurat_object.rds")
-
-# Import precomputed CCI results from another tool (e.g., LIANA, CellPhoneDB)
-cci_results <- import_results("path/to/your_liana_output.csv")
+# Import precomputed CCI results from LIANA package
+cci_results <- import_results("path/to/cci_output.csv")
 
 # Rank interactions using composite scoring
 ranked <- rank_ccis(cci_results)
@@ -39,16 +35,14 @@ top_ranked <- ranked %>%
   dplyr::slice_head(n = 30)
 
 # Create dot plot
-ggplot(top_ranked, aes(x = source_celltype, y = target_celltype, size = score, color = score)) +
+ggplot(top_ranked, aes(x = source_celltype, y = target_celltype, size = score)) +
   geom_point() +
-  scale_color_viridis_c() +
   theme_minimal(base_size = 14) +
   labs(
-    title = "Top Ranked Cell-Cell Interactions",
-    x = "Ligand Source",
-    y = "Receptor Target",
-    size = "CCI Score",
-    color = "CCI Score"
+    title = "Top ranked CCIs by CIS metric",
+    x = "source-target",
+    y = "ligand-receptor",
+    size = "CIS score",
   ) +
   theme(
     axis.text.x = element_text(angle = 45, hjust = 1)

@@ -53,7 +53,7 @@ ggplot(top_ranked, aes(x = source_celltype, y = target_celltype, size = score, c
   theme(
     axis.text.x = element_text(angle = 45, hjust = 1)
   )
-```r
+```
 
 ## Citation
 #### ...

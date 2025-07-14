@@ -32,7 +32,7 @@ ranked <- rank_ccis(cci_results)
 # Select top interactions for plotting
 top_ranked <- ranked %>%
   dplyr::arrange(desc(score)) %>%
-  dplyr::slice_head(n = 30)
+  dplyr::slice_head(n = 10)
 
 # Create dot plot
 ggplot(top_ranked, aes(x = source_celltype, y = target_celltype, size = score)) +

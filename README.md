@@ -1,7 +1,7 @@
 # CCIcompass
 
 ## Description
-**CCIcompass** is an R package designed to **prioritize and rank cell-cell interactions** by integrating results from multiple CCI inference methods into a single composite score. It streamlines analysis and comparison across approaches, helping researchers identify biologically meaningful interactions in single-cell datasets.
+**CCIcompass** is an R package designed to **prioritize and rank cell-cell interactions** based on composite interaction score (CIS). CIS based on ranked-biased precision (RBP), which prioritizes top-ranked interactions from methods implemented in LIANA package and calculates a weighted composite score that reflects agreement across tools, while accounting for rank position. It streamlines analysis and comparison across approaches, helping researchers identify biologically meaningful interactions in single-cell datasets.
 
 ## Features
 - Harmonizes outputs from different CCI inference tools (e.g., LIANA, CellPhoneDB, CellChat)

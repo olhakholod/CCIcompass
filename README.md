@@ -11,7 +11,7 @@ CCIcompass is an R package designed to prioritize and rank cell-cell interaction
 
 ## Installation
 install.packages("devtools")
-devtools::install_github("olhakholod/ccicompass")
+devtools::install_github("olhakholod/CCIcompass")
 
 ## Usage
 #### ...

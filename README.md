@@ -20,6 +20,7 @@ install.packages("devtools")
 devtools::install_github("olhakholod/CCIcompass")
 
 ## Usage
+```r
 library(ccicompass)
 library(ggplot2)
 

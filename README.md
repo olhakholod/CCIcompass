@@ -16,8 +16,10 @@
 - tibble
 
 ## Installation
+```r
 install.packages("devtools")
 devtools::install_github("olhakholod/CCIcompass")
+```
 
 ## Usage
 ```r

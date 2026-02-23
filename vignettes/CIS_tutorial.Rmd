@@ -1,0 +1,318 @@
+---
+title: "Computing the Composite Interaction Score (CIS) with CCIcompass"
+author: "Olha Kholod"
+date: "`r Sys.Date()`"
+output:
+  rmarkdown::html_vignette:
+    toc: true
+    toc_depth: 3
+    number_sections: true
+vignette: >
+  %\VignetteIndexEntry{CIS Tutorial}
+  %\VignetteEngine{knitr::rmarkdown}
+  %\VignetteEncoding{UTF-8}
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(
+  collapse = TRUE,
+  comment  = "#>",
+  fig.width  = 7,
+  fig.height = 5,
+  warning  = FALSE,
+  message  = FALSE
+)
+```
+
+# Introduction
+
+**CCIcompass** provides the **Composite Interaction Score (CIS)**, an ensemble
+metric for prioritising cell–cell interactions (CCIs) from single-cell RNA-seq
+data. The CIS is based on **Rank-Biased Precision (RBP)**, which rewards
+interactions that are consistently ranked highly across multiple CCI inference
+methods.
+
+This vignette walks through the complete workflow using a small, built-in
+example dataset so that you can immediately see expected outputs without
+needing your own data.
+
+The full analysis pipeline used in the paper is available in
+`scripts/figures/Figure_3_pipeline.R`.
+
+---
+
+# Installation
+
+```{r install, eval=FALSE}
+# Install dependencies
+install.packages(c("devtools", "dplyr", "ggplot2", "readr", "tibble",
+                   "patchwork", "ggrepel"))
+devtools::install_github("saezlab/liana")   # required for CCI inference
+
+# Install CCIcompass
+devtools::install_github("olhakholod/CCIcompass")
+```
+
+---
+
+# Overview of the CIS workflow
+
+```
+Seurat object
+     │
+     ▼
+┌─────────────────────────────────────────┐
+│  Step 1: Run LIANA (6 methods)          │
+│  connectome · logfc · natmi · sca       │
+│  cellphonedb · cellchat                 │
+└─────────────────────────────────────────┘
+     │
+     ▼
+┌─────────────────────────────────────────┐
+│  Step 2: Filter to same-patient pairs   │
+│  (source and target from same donor)    │
+└─────────────────────────────────────────┘
+     │
+     ▼
+┌─────────────────────────────────────────┐
+│  Step 3: Retain CCIs common across      │
+│  all donors (≥ N donors per cohort)     │
+└─────────────────────────────────────────┘
+     │
+     ▼
+┌─────────────────────────────────────────┐
+│  Step 4: Intersect across 6 methods     │
+│  (keep only consensus interactions)     │
+└─────────────────────────────────────────┘
+     │
+     ▼
+┌─────────────────────────────────────────┐
+│  Step 5: Compute CIS (RBP aggregation)  │
+│  p = patience parameter (default 0.8)   │
+└─────────────────────────────────────────┘
+     │
+     ▼
+┌─────────────────────────────────────────┐
+│  Step 6: Final filter (≥ 2 donors)      │
+│  and visualisation                      │
+└─────────────────────────────────────────┘
+```
+
+---
+
+# Load the package and example data
+
+```{r load}
+library(CCIcompass)
+library(dplyr)
+library(ggplot2)
+
+# The built-in example dataset contains pre-computed LIANA outputs
+# for a small subset of intestinal epithelial interactions.
+# It is a named list with one data frame per method.
+data("example_cci_list")
+
+# Inspect the structure
+names(example_cci_list)
+glimpse(example_cci_list$sca)
+```
+
+The example dataset has the structure produced by `liana_wrap()`:
+
+| Column | Description |
+|--------|-------------|
+| `source` | Sending cell type |
+| `target` | Receiving cell type |
+| `ligand` | Ligand gene symbol |
+| `receptor` | Receptor gene symbol |
+| `patient_id` | Donor identifier |
+| `*_score` | Method-specific interaction score |
+
+---
+
+# Step 1 – Run LIANA (skip if using example data)
+
+```{r liana, eval=FALSE}
+library(liana)
+library(Seurat)
+
+# Load your Seurat object
+obj <- readRDS("path/to/your_seurat_object.rds")
+
+# Run four rank-based methods
+liana_out <- liana_wrap(
+  obj,
+  idents_col = "celltype.combo",
+  method     = c("connectome", "logfc", "natmi", "sca"),
+  resource   = "CellPhoneDB"
+)
+
+# Run CellPhoneDB (permutation-based)
+options(future.globals.maxSize = 10000 * 1024^2)
+cpdb_out <- liana_wrap(
+  obj,
+  idents_col         = "celltype.combo",
+  method             = "cellphonedb",
+  resource           = "CellPhoneDB",
+  permutation.params = list(nperms = 100, parallelize = FALSE, workers = 4),
+  expr_prop          = 0.05
+)
+
+# Run CellChat
+cc_out <- liana_wrap(
+  obj,
+  idents_col = "celltype.combo",
+  method     = "call_cellchat",
+  resource   = "CellPhoneDB"
+)
+```
+
+---
+
+# Step 2 – Filter to same-patient source–target pairs
+
+When multiple donors are multiplexed in one object, cell type labels often
+include the donor ID (e.g. `"Epi-Intestine_A26"`). This step ensures we only
+keep interactions where source and target cells come from the **same donor**,
+avoiding spurious cross-donor signals.
+
+```{r filter_patient}
+# Using the example data (patient IDs are embedded in source/target labels)
+filtered <- filter_same_patient(example_cci_list$sca)
+
+cat("Rows before filtering:", nrow(example_cci_list$sca), "\n")
+cat("Rows after filtering: ", nrow(filtered), "\n")
+```
+
+---
+
+# Step 3 – Retain CCIs common across all donors
+
+Keep only interactions that appear in **all** (or a specified number of) donors.
+This removes donor-specific noise and retains robust signals.
+
+```{r filter_donors}
+donors <- c("A26 (386C)", "A38 (432C)", "A30 (398B)")
+
+common <- filter_common_donors(
+  filtered,
+  donors  = donors,
+  n_req   = length(donors)   # require presence in all 3 donors
+)
+
+cat("Unique LR pairs after donor filtering:", n_distinct(common$ligand, common$receptor), "\n")
+```
+
+---
+
+# Step 4 – Intersect across all 6 methods
+
+Retain only interactions identified by **all six** inference methods. This
+conservative filter ensures only high-confidence CCIs advance to scoring.
+
+```{r intersect, eval=FALSE}
+# In practice, repeat Steps 2-3 for each method CSV, then:
+common_consensus <- intersect_methods(
+  list(
+    cellchat    = common_cellchat,
+    cellphonedb = common_cellphonedb,
+    connectome  = common_connectome,
+    logfc       = common_logfc,
+    natmi       = common_natmi,
+    sca         = common_sca
+  )
+)
+```
+
+For this vignette we use the pre-filtered example data:
+
+```{r load_consensus}
+data("example_consensus")   # pre-filtered across 6 methods
+glimpse(example_consensus)
+```
+
+---
+
+# Step 5 – Compute CIS
+
+The **Composite Interaction Score** is computed as:
+
+$$\text{CIS} = \sum_{m=1}^{M} p^{\,r_m - 1}$$
+
+where $r_m$ is the rank of the interaction within method $m$, and $p$ is the
+**patience parameter** (default 0.8) that controls how steeply the score
+decreases with rank position. Higher $p$ values give more weight to top-ranked
+interactions.
+
+```{r compute_cis}
+cis_results <- compute_cis(example_consensus, p = 0.8)
+
+# View top interactions
+cis_results %>%
+  select(source, target, ligand, receptor, total_rbp_score) %>%
+  head(10)
+```
+
+---
+
+# Step 6 – Final filter (≥ 2 donors) and visualisation
+
+After computing CIS, apply a final filter to keep only interactions observed in
+at least two independent donors. This removes interactions driven by a single
+sample.
+
+```{r final_filter}
+final <- filter_min_donors(cis_results, min_donors = 2)
+
+cat("Final interactions:", nrow(final), "\n")
+```
+
+## Dot plot
+
+```{r dotplot, fig.cap="Top ranked CCIs by CIS. Point size = CIS value; colour indicates tissue of origin."}
+plot_cis_dotplot(
+  final,
+  top_n     = 20,
+  x_var     = "ligand_receptor",   # "LR" column (ligand-receptor pair)
+  y_var     = "source_target",
+  size_var  = "total_rbp_score",
+  title     = "Top 20 CCIs – Epithelial Intestine"
+)
+```
+
+## Venn diagram (cross-tissue)
+
+If you have CIS results from multiple tissues, you can compare shared vs.
+tissue-specific interactions:
+
+```{r venn, eval=FALSE}
+# Example: compare epithelial CCIs across three tissues
+plot_cis_venn(
+  list(
+    intestine = final_intestine,
+    skin      = final_skin,
+    uterus    = final_uterus
+  ),
+  labels     = c("epithelial intestine", "epithelial skin", "epithelial uterus"),
+  fill_cols  = c("#E5C4A1", "#C8DFA4", "#A4C8DF")
+)
+```
+
+## PPI hub-gene network
+
+```{r network, eval=FALSE}
+# Requires a STRING interaction TSV for the gene set of interest
+plot_ppi_network(
+  string_tsv  = "path/to/string_interactions.tsv",
+  top_n_label = 10,
+  seed        = 42
+)
+```
+
+---
+
+# Session information
+
+```{r session}
+sessionInfo()
+```

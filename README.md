@@ -154,7 +154,7 @@ Each script is self-contained: it loads processed data, runs the relevant analys
 | Figure 4 | [`scripts/figures/Figure_4_pipeline.R`](scripts/figures/Figure_4_pipeline.R) | MIF & CD74 expression validation (GTEx violin plots + HPA bar charts) |
 | Figure 5 | [`scripts/figures/Figure_5_pipeline.R`](scripts/figures/Figure_5_pipeline.R) | Tissue-specific CCIs (highlighted Venn + dot plots + PPI networks) |
 
-> **Data availability:** Processed Seurat objects and LIANA outputs are deposited under data. The interactive Shiny app is available at https://cellinteractionsdb.shinyapps.io/shinyapp_ro3_scrna-seq/<img width="468" height="14" alt="image" src="https://github.com/user-attachments/assets/9ddd6433-fdc2-4ad1-9eee-4accd8261e40" />
+> **Data availability:** Processed Seurat objects and LIANA outputs are deposited under data folder. The interactive Shiny app is available at https://cellinteractionsdb.shinyapps.io/shinyapp_ro3_scrna-seq/.
 
 
 ---

@@ -1,55 +1,187 @@
-# CCIcompass
+# CCIcompass <img src="man/figures/logo.png" align="right" height="120" alt="CCIcompass logo"/>
 
-## Description
-**CCIcompass** is an R package designed to **prioritize and rank cell-cell interactions** based on composite interaction score (CIS). CIS based on ranked-biased precision (RBP), which prioritizes top-ranked interactions from methods implemented in LIANA package and calculates a weighted composite score that reflects agreement across tools, while accounting for rank position. It streamlines analysis and comparison across approaches, helping researchers identify biologically meaningful interactions in single-cell datasets.
+<!-- badges -->
+[![R-CMD-check](https://github.com/olhakholod/CCIcompass/actions/workflows/R-CMD-check.yaml/badge.svg)](https://github.com/olhakholod/CCIcompass/actions)
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 
-## Features
-- Harmonizes outputs from different CCI inference tools (e.g., LIANA, CellPhoneDB, CellChat)
-- Computes composite scores (CIS) to rank ligand-receptor interactions
-- Compatible with Seurat and SingleCellExperiment objects
+> **CCIcompass** is an R package for prioritizing and ranking cell–cell interactions (CCIs) from single-cell RNA-seq data using the **Composite Interaction Score (CIS)** — an ensemble metric based on Rank-Biased Precision (RBP).
 
-## Dependencies
-- dplyr
-- ggplot2
-- Seurat
-- readr
-- tibble
+---
+
+## Table of Contents
+
+1. [Background](#background)
+2. [Installation](#installation)
+3. [Quick Start](#quick-start)
+4. [Full Tutorial](#full-tutorial)
+5. [Repository Structure](#repository-structure)
+6. [Reproducing Paper Figures](#reproducing-paper-figures)
+7. [Session Info](#session-info)
+8. [Citation](#citation)
+
+---
+
+## Background
+
+Single-cell RNA-seq enables the inference of cell–cell communication, but different tools (CellPhoneDB, CellChat, NATMI, etc.) often disagree on which interactions are most important. **CCIcompass** resolves this by computing a **Composite Interaction Score (CIS)** that:
+
+- Runs six CCI inference methods through the [LIANA](https://github.com/saezlab/liana) framework
+- Ranks each interaction per method using **Rank-Biased Precision (RBP)** — a weighted rank aggregation that emphasises top-ranked interactions
+- Sums RBP scores across all methods to produce a single, robust CIS per interaction
+- Enables cross-tissue and cross-compartment comparison of conserved and tissue-specific CCIs
+
+This package accompanies the paper:
+
+> *"A Composite Interaction Score: prioritizing cell-cell interactions from single-cell RNAseq with application to pre-menopausal epithelial barriers"*
+> Kholod O. et al., under review (2026)
+
+---
 
 ## Installation
+
+### 1. Install dependencies
+
 ```r
-install.packages("devtools")
+# CRAN
+install.packages(c("devtools", "dplyr", "ggplot2", "readr", "tibble",
+                   "patchwork", "ggrepel", "igraph"))
+
+# Bioconductor
+if (!requireNamespace("BiocManager", quietly = TRUE))
+  install.packages("BiocManager")
+BiocManager::install("SingleCellExperiment")
+
+# LIANA (required for CCI inference)
+devtools::install_github("saezlab/liana")
+```
+
+### 2. Install CCIcompass
+
+```r
 devtools::install_github("olhakholod/CCIcompass")
 ```
 
-## Usage
+---
+
+## Quick Start
+
 ```r
 library(CCIcompass)
 
-# Import precomputed CCI results from LIANA package
-cci_results <- import_results("path/to/cci_output.csv")
+# Load the built-in example dataset (pre-computed LIANA outputs)
+data("example_cci_list")
 
-# Rank interactions using composite scoring
-ranked <- rank_ccis(cci_results)
+# Compute CIS across all methods (patience parameter p = 0.8)
+cis_results <- compute_cis(example_cci_list, p = 0.8)
 
-# Select top interactions for plotting
-top_ranked <- ranked %>%
-  dplyr::arrange(desc(score)) %>%
-  dplyr::slice_head(n = 10)
+# View top 10 interactions
+head(cis_results, 10)
 
-# Create dot plot
-ggplot(top_ranked, aes(x = source_celltype, y = target_celltype, size = score)) +
-  geom_point() +
-  theme_minimal(base_size = 14) +
-  labs(
-    title = "Top ranked CCIs by CIS metric",
-    x = "source-target",
-    y = "ligand-receptor",
-    size = "CIS score",
-  ) +
-  theme(
-    axis.text.x = element_text(angle = 45, hjust = 1)
-  )
+# Visualise as a dot plot
+plot_cis_dotplot(cis_results, top_n = 20)
 ```
 
+**Expected output:**
+
+| ligand | receptor | source | target | CIS |
+|--------|----------|--------|--------|-----|
+| MIF    | CD74     | Epi-Intestine | DC | 4.82 |
+| APP    | CD74     | Stromal | Mac | 4.61 |
+| ...    | ...      | ...    | ...    | ... |
+
+---
+
+## Full Tutorial
+
+A step-by-step tutorial covering the complete workflow — from raw Seurat object to ranked, cross-tissue CCI comparison — is available in:
+
+📄 **[`vignettes/CIS_tutorial.Rmd`](vignettes/CIS_tutorial.Rmd)**
+
+The tutorial covers:
+
+1. Preparing a Seurat object for LIANA
+2. Running all six CCI inference methods
+3. Filtering CCIs by donor (same-patient source–target pairs)
+4. Retaining CCIs common across donors
+5. Computing CIS with `compute_cis()`
+6. Filtering to interactions present in ≥2 donors
+7. Visualising results: dot plots, Venn diagrams, PPI hub networks
+8. Cross-tissue comparison of conserved and tissue-specific CCIs
+
+---
+
+## Repository Structure
+
+```
+CCIcompass/
+├── R/                        # Package source functions
+│   ├── compute_cis.R         #   compute_cis()   – core RBP scoring
+│   ├── filter_ccis.R         #   filter_ccis()   – same-patient & donor filters
+│   ├── plot_dotplot.R        #   plot_cis_dotplot()
+│   ├── plot_network.R        #   plot_ppi_network()
+│   └── utils.R               #   internal helpers
+│
+├── vignettes/
+│   └── CIS_tutorial.Rmd      # Full worked tutorial with example data
+│
+├── data/
+│   └── example_cci_list.rda  # Small example dataset (LIANA outputs)
+│
+├── scripts/
+│   └── figures/              # One script per main figure
+│       ├── Figure_3_pipeline.R
+│       ├── Figure_4_pipeline.R
+│       └── Figure_5_pipeline.R
+│
+├── inst/extdata/             # Raw example input files
+├── man/                      # Auto-generated documentation
+├── tests/                    # Unit tests (testthat)
+├── DESCRIPTION
+├── NAMESPACE
+├── session_info.txt          # Exact R + package versions used in paper
+└── README.md
+```
+
+---
+
+## Reproducing Paper Figures
+
+All main figures can be reproduced using the scripts in `scripts/figures/`.
+Each script is self-contained: it loads processed data, runs the relevant analysis, and outputs the figure as a PDF.
+
+| Figure | Script | Description |
+|--------|--------|-------------|
+| Figure 3 | [`scripts/figures/Figure_3_pipeline.R`](scripts/figures/Figure_3_pipeline.R) | Conserved CCIs across epithelial barriers (Venn + dot plots + PPI networks) |
+| Figure 4 | [`scripts/figures/Figure_4_pipeline.R`](scripts/figures/Figure_4_pipeline.R) | MIF & CD74 expression validation (GTEx violin plots + HPA bar charts) |
+| Figure 5 | [`scripts/figures/Figure_5_pipeline.R`](scripts/figures/Figure_5_pipeline.R) | Tissue-specific CCIs (highlighted Venn + dot plots + PPI networks) |
+
+> **Data availability:** Processed Seurat objects and LIANA outputs are deposited at [Zenodo: DOI XXXXXXX](#) and can be downloaded with the script `scripts/pipeline/00_download_data.R`.
+
+---
+
+## Session Info
+
+The exact R and package versions used to generate all paper results are recorded in [`session_info.txt`](session_info.txt).
+
+Key versions:
+- R 4.3.1
+- liana 1.0.0
+- Seurat 5.0.0
+- ggplot2 3.4.4
+
+---
+
 ## Citation
-#### ...
+
+If you use CCIcompass, please cite:
+
+```bibtex
+@article{kholod2025ccicompass,
+  title   = {A Composite Interaction Score: prioritizing cell-cell interactions
+             from single-cell RNAseq with application to pre-menopausal epithelial barriers},
+  author  = {Kholod, Olha and others},
+  journal = {under review},
+  year    = {2026},
+  doi     = {10.XXXX/XXXXXXX}
+}
+```

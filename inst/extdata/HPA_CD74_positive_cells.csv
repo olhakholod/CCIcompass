@@ -1,0 +1,7 @@
+donor,cell_type,pct_positive,sd
+donor 1,Glandular cells of intestine,91,2.3
+donor 2,Glandular cells of intestine,100,0.1
+donor 3,Glandular cells of intestine,99,0.6
+donor 4,Glandular cells of uterus,84,4.1
+donor 5,Glandular cells of uterus,86,3.8
+donor 6,Glandular cells of uterus,92,2.9

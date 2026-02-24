@@ -1,0 +1,10 @@
+donor,cell_type,pct_positive,sd
+donor 1,Glandular cells of intestine,26,3.1
+donor 2,Glandular cells of intestine,93,2.0
+donor 3,Glandular cells of intestine,5,0.8
+donor 4,Keratinocytes of skin,16,4.2
+donor 5,Keratinocytes of skin,18,5.1
+donor 6,Keratinocytes of skin,25,6.0
+donor 7,Glandular cells of uterus,98,0.5
+donor 8,Glandular cells of uterus,99,0.3
+donor 9,Glandular cells of uterus,99,0.4

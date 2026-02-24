@@ -1,66 +1,46 @@
-R session information used to generate all results in:
-"A Composite Interaction Score: prioritizing cell-cell interactions from
-single-cell RNAseq with application to pre-menopausal epithelial barriers"
-Kholod O. et al., PLOS Computational Biology (2025)
+R session information used to develop and test CCIcompass v1.0.0
+Paper: "A Composite Interaction Score: prioritizing cell-cell interactions
+from single-cell RNAseq with application to pre-menopausal epithelial barriers"
+Kholod O. et al., Under Review (2026)
 
-Generated with: sessionInfo()
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
-R version 4.3.1 (2023-06-16)
-Platform: aarch64-apple-darwin20 (64-bit)
-Running under: macOS Ventura 13.5
+R version 4.5.2 (2025-10-31)
+Platform: aarch64-apple-darwin20 (Apple Silicon)
+Running under: macOS Tahoe 26.1
 
-Matrix products: default
-BLAS:   /System/Library/Frameworks/Accelerate.framework/...
-LAPACK: /Library/Frameworks/R.framework/...
-
-locale:
-[1] en_US.UTF-8/en_US.UTF-8/en_US.UTF-8/C/en_US.UTF-8/en_US.UTF-8
-
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 KEY PACKAGES
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
 CCI inference:
   liana           1.0.0
   CellChat        2.1.0
 
 Single-cell:
-  Seurat          5.0.0
-  SeuratObject    5.0.0
-  SingleCellExperiment 1.24.0
+  Seurat          5.x.x
+  SeuratObject    5.x.x
+  SingleCellExperiment 1.26.0
 
 Data manipulation:
-  dplyr           1.1.3
-  tidyr           1.3.0
-  readr           2.1.4
+  dplyr           1.1.4
+  tidyr           1.3.1
+  readr           2.1.5
   tibble          3.2.1
   purrr           1.0.2
-  stringr         1.5.0
+  stringr         1.5.1
 
 Visualisation:
-  ggplot2         3.4.4
-  ggrepel         0.9.4
+  ggplot2         3.5.1
+  ggrepel         0.9.6
   ggvenn          0.1.10
-  ggpattern       1.0.1
-  patchwork       1.1.3
+  patchwork       1.3.0
 
 Network analysis:
-  igraph          1.5.1
-  tidygraph       1.2.3
-  ggraph          2.1.0
+  igraph          2.1.1
+  tidygraph       1.3.1
+  ggraph          2.2.1
   packcircles     0.3.4
 
-Utilities:
-  devtools        2.4.5
-  roxygen2        7.2.3
-  testthat        3.2.0
-  knitr           1.44
-  rmarkdown       2.25
-  pkgdown         2.0.7
-
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-To reproduce this environment, run:
-  renv::restore()   # if renv.lock is present
-or install packages individually as listed above.
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+To reproduce: install packages as listed in the README.

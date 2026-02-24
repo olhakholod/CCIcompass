@@ -1,13 +1,34 @@
-Title: CCIcompass: Composite Interaction Score for Cell-Cell Interaction Prioritization
+Package: CCIcompass
+Title: Composite Interaction Score for Cell-Cell Interaction Prioritization
 Version: 1.0.0
+Authors@R: 
+    person("Olha", "Kholod",
+           email = "olha.kholod@dartmouth.edu",
+           role  = c("aut", "cre"),
+           comment = c(ORCID = "0000-0001-6257-4948"))
 Description: Prioritizes and ranks cell-cell interactions (CCIs) from
     single-cell RNA-seq data using the Composite Interaction Score (CIS),
-    an ensemble metric based on Rank-Biased Precision (RBP) that aggregates
-    results across six CCI inference methods implemented in the LIANA framework.
+    an ensemble metric based on Rank-Biased Precision (RBP). The package
+    wraps the LIANA framework to run six CCI inference methods, applies
+    donor-aware filtering, and aggregates results into a single ranked
+    output from a Seurat object in one function call.
+License: MIT + file LICENSE
 URL: https://github.com/olhakholod/CCIcompass
 BugReports: https://github.com/olhakholod/CCIcompass/issues
-
+Encoding: UTF-8
+Roxygen: list(markdown = TRUE)
+RoxygenNote: 7.3.2
+Depends:
+    R (>= 4.2.0)
+Imports:
+    dplyr (>= 1.1.0),
+    ggplot2 (>= 3.4.0),
+    readr (>= 2.1.0),
+    tibble (>= 3.2.0)
 Suggests:
+    liana,
+    Seurat,
+    SeuratObject,
     knitr,
     rmarkdown,
     testthat (>= 3.0.0),

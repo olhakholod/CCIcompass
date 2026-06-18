@@ -156,9 +156,9 @@ processed data and reproduces the figure panels.
              from single-cell RNAseq with application to pre-menopausal
              epithelial barriers},
   author  = {Kholod, Olha and others},
-  journal = {Under Review},
+  journal = {Journal of Advanced Research},
   year    = {2026},
-  doi     = {10.XXXX/XXXXXXX}
+  doi     = {10.1016/j.jare.2026.03.046}
 }
 ```
 
